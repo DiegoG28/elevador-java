@@ -3,12 +3,14 @@ package elevador;
 public class Main {
 
 	public static void main(String[] args) {
-		Elevator elevator = new Elevator();
+		Request req = new Request();
 
-		Trip trip1 = new Trip(elevator, 3, 6, 3);
-		Trip trip2 = new Trip(elevator, 7, 10, 3);
-		Trip trip3 = new Trip(elevator, 10, 14, 3);
+		Elevator elevator = new Elevator(req);
+		Trip trip1 = new Trip(3, 6, 3, req);
+		Trip trip2 = new Trip(7, 10, 3, req);
+		Trip trip3 = new Trip(10, 14, 3, req);
 
+		elevator.start();
 		trip1.start();
 		trip2.start();
 		trip3.start();

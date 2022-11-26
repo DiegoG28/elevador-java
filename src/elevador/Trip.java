@@ -1,45 +1,39 @@
 package elevador;
 
 public class Trip extends Thread {
-	Elevator elevator;
 	int initialFloor;
 	int destinationFloor;
-	int numberOfPeople;
+	int people;
 	boolean direction;
+	Request req;
 
-	public Trip(Elevator elevator, int initialFloor, int destinationFloor, int numberOfPeople) {
-		this.elevator = elevator;
+	public Trip(int initialFloor, int destinationFloor, int people, Request req) {
 		this.initialFloor = initialFloor;
 		this.destinationFloor = destinationFloor;
-		this.numberOfPeople = numberOfPeople;
-		if (initialFloor < destinationFloor) {
-			this.direction = true;
-		} else {
-			this.direction = false;
-		}
+		this.people = people;
+		this.req = req;
 	}
 
 	public void run() {
 		try {
-			int randomTime = (int) ((Math.random() * 10 + 1) * 1000);
-			elevator.floors[initialFloor] = true;
-			sleep(randomTime);
-			while ((numberOfPeople > elevator.availableCapacity()) || elevator.direction != this.direction) {
-				System.out.println("oal");
-				synchronized (elevator) {
-					elevator.wait();
-				}
+			int time = (int) (Math.random() * 2) + 1;
+			Thread.sleep(time * 1000);
+			synchronized (req) {
+				System.out.println("Trip has been requested from " + initialFloor + " to " + destinationFloor);
+				req.floors[initialFloor] = true;
+				req.wait();
+				System.out.println("The elevator has arrived at the floor " + initialFloor);
+				doTrip();
 			}
 
-			elevator.fillCapacity(numberOfPeople);
-			elevator.call(initialFloor, destinationFloor, numberOfPeople);
-			sleep(Math.abs(destinationFloor - initialFloor) * 1000);
-			elevator.checkFloors(destinationFloor);
-			System.out.println("Llegando al piso " + destinationFloor);
-			elevator.floors[initialFloor] = false;
-			elevator.fillCapacity(-numberOfPeople);
-			notifyAll();
+		} catch (Exception e) {
+		}
+	}
 
+	public void doTrip() {
+		try {
+			Thread.sleep(1000);
+			System.out.println("Ya llegó al piso " + destinationFloor);
 		} catch (Exception e) {
 
 		}
