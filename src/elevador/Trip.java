@@ -4,38 +4,31 @@ public class Trip extends Thread {
 	int initialFloor;
 	int destinationFloor;
 	int people;
-	boolean direction;
+	String direction;
 	Request req;
 
+	// adios adios:)
 	public Trip(int initialFloor, int destinationFloor, int people, Request req) {
 		this.initialFloor = initialFloor;
 		this.destinationFloor = destinationFloor;
 		this.people = people;
+		if (this.initialFloor < this.destinationFloor) {
+			this.direction = "up";
+		} else {
+			this.direction = "down";
+		}
 		this.req = req;
 	}
 
 	public void run() {
 		try {
-			int time = (int) (Math.random() * 2) + 1;
-			Thread.sleep(time * 1000);
-			synchronized (req) {
-				System.out.println("Trip has been requested from " + initialFloor + " to " + destinationFloor);
-				req.floors[initialFloor] = true;
-				req.wait();
-				System.out.println("The elevator has arrived at the floor " + initialFloor);
-				doTrip();
-			}
-
+			sleep((long) (Math.random() * 2000 + 1000));
+			req.floors[this.initialFloor] = true;
+			req.makeRequest(initialFloor, destinationFloor, people, direction);
+			System.out.println("Travel request from floor " + this.initialFloor + " to " + this.destinationFloor
+					+ " Passengers: " + this.people);
 		} catch (Exception e) {
-		}
-	}
-
-	public void doTrip() {
-		try {
-			Thread.sleep(1000);
-			System.out.println("Ya llegó al piso " + destinationFloor);
-		} catch (Exception e) {
-
+			System.out.println(e);
 		}
 	}
 }

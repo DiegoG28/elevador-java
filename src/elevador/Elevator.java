@@ -6,8 +6,9 @@ public class Elevator extends Thread {
 	int capacity;
 	int passengers;
 	int trips;
-	boolean direction;
+	String direction;
 	Request req;
+	Boolean areThereReq;
 
 	public Elevator(Request req) {
 		this.move = new Move(0, 0);
@@ -15,41 +16,90 @@ public class Elevator extends Thread {
 		this.capacity = 9;
 		this.passengers = 0;
 		this.trips = 0;
-		this.direction = true;
+		this.direction = "stop";
 		this.req = req;
+		this.areThereReq = false;
 	}
 
 	// si se puede :)
 	public void run() {
 		try {
-			while (true) {
-				if (this.currentFloor == 0) {
-					for (int i = 0; i < req.floors.length; i++) {
-						if (req.floors[i]) {
-							move.setInitialFloor(this.currentFloor);
-							move.setDestinationFloor(i);
-							move.printMove(this.direction);
-							req.floors[i] = false;
-							this.currentFloor = i;
-							Thread.sleep(1000);
-							synchronized (req) {
-								req.notify();
+			while (trips < 3) {
+				if (this.direction == "stop") {
+					while (!this.areThereReq) {
+						for (int floor = 0; floor < req.floors.length; floor++) {
+							if (req.floors[floor]) {
+								this.direction = "up";
+								this.areThereReq = true;
 							}
 						}
 					}
-				} else {
-					for (int i = this.currentFloor; i < req.floors.length; i++) {
-						if (req.floors[i]) {
-							System.out.println("New request");
-							req.floors[i] = false;
-							this.currentFloor = i;
+				} else if (this.direction == "up") {
+					for (int currentFloor = 0; currentFloor < req.floors.length; currentFloor++) {
+						sleep(1000);
+						System.out.println("Current floor " + currentFloor);
+						if (this.areThereReq) {
+							for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
+								Request currentReq = (Request) req.requests.get(currentRequest);
+								if (currentFloor == currentReq.finalFloor && currentReq.state == false) {
+									this.passengers -= currentReq.people;
+									System.out.println(currentReq.people + " passengers left the elevator. Passengers: "
+											+ this.passengers + " Direction: " + this.direction);
+									currentReq.state = true;
+									req.floors[currentFloor] = false;
+								}
+
+								if (currentFloor == currentReq.originFloor) {
+									if (req.requests.size() == 1) {
+										this.direction = currentReq.direction;
+									}
+
+									if (this.passengers + currentReq.people <= this.capacity) {
+										this.passengers += currentReq.people;
+										System.out.println(currentReq.people + " passengers entered the elevator. Passengers: "
+												+ this.passengers + " Direction: " + this.direction);
+
+									}
+								}
+							}
+
+							areThereReq = false;
+							for (int i = 0; i < req.requests.size(); i++) {
+								Request currentReq = (Request) req.requests.get(i);
+								if (currentReq.state == false) {
+									areThereReq = true;
+								}
+							}
+
+							if (!areThereReq) {
+								this.direction = "down";
+								this.setCurrentFloor(currentFloor);
+								break;
+							}
+						}
+					}
+				} else if (this.direction == "down") {
+					for (int currentFloor = getCurrentFloor(); currentFloor > 0; currentFloor--) {
+						sleep(1000);
+						System.out.println("Current floor " + currentFloor);
+						if (currentFloor == 0) {
+							this.direction = "stop";
 						}
 					}
 				}
 			}
+		} catch (
 
-		} catch (Exception e) {
+		Exception e) {
 
 		}
+	}
+
+	public void setCurrentFloor(int currentFloor) {
+		this.currentFloor = currentFloor;
+	}
+
+	public int getCurrentFloor() {
+		return this.currentFloor;
 	}
 }
