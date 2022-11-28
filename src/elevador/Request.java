@@ -7,7 +7,7 @@ public class Request {
 	ArrayList<Object> requests;
 
 	int originFloor;
-	int finalFloor;
+	int destinationFloor;
 	int people;
 	String direction;
 	boolean state;
@@ -17,16 +17,17 @@ public class Request {
 		this.requests = new ArrayList<Object>();
 	}
 
-	public Request(int originFloor, int finalFloor, int people, String direction) {
+	public Request(int originFloor, int destinationFloor, int people, String direction) {
 		this.originFloor = originFloor;
-		this.finalFloor = finalFloor;
+		this.destinationFloor = destinationFloor;
 		this.people = people;
 		this.direction = direction;
 		this.state = false;
 	}
 
-	public void makeRequest(int originFloor, int finalFloor, int people, String direction) {
-		requests.add(new Request(originFloor, finalFloor, people, direction));
+	public void makeRequest(int originFloor, int destinationFloor, int people, String direction) {
+		floors[destinationFloor] = true;
+		requests.add(new Request(originFloor, destinationFloor, people, direction));
 	}
 
 }
