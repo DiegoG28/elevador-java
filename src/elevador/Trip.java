@@ -22,7 +22,7 @@ public class Trip extends Thread {
 
 	public void run() {
 		try {
-			sleep((long) (Math.random() * 2000 + 1000));
+			sleep((long) (Math.random() * 9000 + 1000));
 			req.makeRequest(initialFloor, destinationFloor, people, direction);
 			System.out.println("Travel request from floor " + this.initialFloor + " to " + this.destinationFloor
 					+ " Passengers: " + this.people);
