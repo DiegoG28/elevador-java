@@ -7,7 +7,6 @@ public class Trip extends Thread {
 	String direction;
 	Request req;
 
-	// adios adios:)
 	public Trip(int initialFloor, int destinationFloor, int people, Request req) {
 		this.initialFloor = initialFloor;
 		this.destinationFloor = destinationFloor;
