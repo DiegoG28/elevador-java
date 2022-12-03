@@ -19,7 +19,6 @@ public class Elevator extends Building implements Runnable {
 		this.req = req;
 	}
 
-	// si se puede :)
 	public void run() {
 		try {
 			while (trips < 3) {
@@ -85,20 +84,45 @@ public class Elevator extends Building implements Runnable {
 	}
 
 	public void checkForRequest() {
+		// int[] floors = new int[15];
+		// for (int currentRequest = 0; currentRequest < req.requests.size();
+		// currentRequest++) {
+		// Request currentReq = (Request) req.requests.get(currentRequest);
+		// if(currentReq)
+		// }
+
 		for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 			Request currentReq = (Request) req.requests.get(currentRequest);
+			// System.out.println(getCurrentFloor() + "-" + currentReq.destinationFloor +
+			// "-" + currentReq.state);
+			// {[1,3],[7,10].[10,12]}
+			// piso = 10
+			// contador piso1 +1+1
+			// contador piso10
 			if (isDestinationFloor(currentReq)) {
 				setPassengers(-currentReq.people);
 				System.out.println(currentReq.people + " passengers left the elevator. Passengers: "
 						+ getPassengers() + " Direction: " + getDirection());
 				currentReq.state = "done";
 			}
+		}
+
+		for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
+			Request currentReq = (Request) req.requests.get(currentRequest);
 
 			if (isOriginFloor(currentReq)) {
 				// if (shouldChangeDirection()) {
 				// setDirection(currentReq.direction);
 				// }
 
+				// downnnn
+				// 14
+				// 13
+				// 12
+				// 11
+				// 10: 10 - 12 direccion up
+
+				// 10 origen <= 14 y está pendiente
 				if (thereIsSpaceAvailable(currentReq) && getDirection() == currentReq.direction) {
 					setPassengers(currentReq.people);
 					System.out.println(currentReq.people + " passengers entered the elevator. Passengers: "
@@ -106,7 +130,9 @@ public class Elevator extends Building implements Runnable {
 					currentReq.state = "in progress";
 				}
 			}
+
 		}
+
 	}
 
 	public boolean thereArePendingRequests() {
@@ -121,18 +147,22 @@ public class Elevator extends Building implements Runnable {
 
 	public boolean thereArePendingRequests(String direction) {
 		if (direction.equals("up")) {
+
 			for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 				Request currentReq = (Request) req.requests.get(currentRequest);
-				if ((currentReq.isPending() || currentReq.isInProgress())
-						&& currentReq.destinationFloor >= getCurrentFloor()) {
+
+				if ((currentReq.destinationFloor >= getCurrentFloor() && currentReq.isInProgress())
+						|| currentReq.originFloor >= getCurrentFloor() && currentReq.isPending()) {
 					return true;
 				}
 			}
 		} else if (direction.equals("down")) {
 			for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 				Request currentReq = (Request) req.requests.get(currentRequest);
-				if ((currentReq.isPending() || currentReq.isInProgress())
-						&& currentReq.originFloor <= getCurrentFloor()) {
+				// System.out.print("abajo?" + currentReq.originFloor + "-" + getCurrentFloor()
+				// + " / ");
+				if ((currentReq.originFloor <= getCurrentFloor() && currentReq.isPending())
+						|| currentReq.destinationFloor <= getCurrentFloor() && currentReq.isInProgress()) {
 					return true;
 				}
 			}
