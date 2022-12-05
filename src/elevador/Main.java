@@ -7,12 +7,16 @@ public class Main {
 		Runnable elevator = new Elevator(req);
 		Thread elevatorThread = new Thread(elevator);
 
-		Trip trip1 = new Trip(3, 6, 3, req);
-		Trip trip2 = new Trip(7, 10, 6, req);
-		Trip trip3 = new Trip(10, 12, 6, req);
-		Trip trip4 = new Trip(11, 2, 3, req);
-		Trip trip5 = new Trip(1, 14, 5, req);
-		Trip trip6 = new Trip(12, 0, 4, req);
+		Trip trip1 = new Trip(req);
+		Trip trip2 = new Trip(req);
+		Trip trip3 = new Trip(req);
+		Trip trip4 = new Trip(req);
+		Trip trip5 = new Trip(req);
+		Trip trip6 = new Trip(req);
+		Trip trip7 = new Trip(req);
+		Trip trip8 = new Trip(req);
+		Trip trip9 = new Trip(req);
+		Trip trip10 = new Trip(req);
 
 		elevatorThread.start();
 		trip1.start();
@@ -21,6 +25,10 @@ public class Main {
 		trip4.start();
 		trip5.start();
 		trip6.start();
+		trip7.start();
+		trip8.start();
+		trip9.start();
+		trip10.start();
 
 	}
 

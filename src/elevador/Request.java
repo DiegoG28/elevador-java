@@ -62,4 +62,15 @@ public class Request {
 		return false;
 	}
 
+	public int getPendingRequests() {
+		int pendingRequests = 0;
+		for (int currentRequest = 0; currentRequest < requests.size(); currentRequest++) {
+			Request currentReq = (Request) requests.get(currentRequest);
+			if (currentReq.isPending()) {
+				pendingRequests++;
+			}
+		}
+		return pendingRequests;
+	}
+
 }

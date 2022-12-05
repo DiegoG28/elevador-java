@@ -1,7 +1,6 @@
 package elevador;
 
 public class Elevator extends Building implements Runnable {
-	Move move;
 	int currentFloor;
 	int capacity;
 	int passengers;
@@ -10,7 +9,6 @@ public class Elevator extends Building implements Runnable {
 	Request req;
 
 	public Elevator(Request req) {
-		this.move = new Move(0, 0);
 		this.currentFloor = 0;
 		this.capacity = 9;
 		this.passengers = 0;
@@ -21,45 +19,47 @@ public class Elevator extends Building implements Runnable {
 
 	public void run() {
 		try {
-			while (trips < 3) {
+			while (trips < 10) {
 				if (getDirection() == "stop") {
-					Thread.sleep(500);
+					if (getCurrentFloor() == 0 && !thereArePendingRequests()) {
+						System.out.println("There are not pending requests. Waiting...");
+						synchronized (req) {
+							req.wait();
+						}
+					}
 					for (int currentFloor = getCurrentFloor(); currentFloor >= 0; currentFloor--) {
 						changeDirection();
 						if (getDirection() != "stop") {
 							break;
 						}
-						Thread.sleep(500);
+						Thread.sleep(250);
 						move(currentFloor);
 					}
 				} else if (getDirection() == "up") {
-					Thread.sleep(500);
-					System.out.println("Elevator is going up.");
 					for (int currentFloor = getCurrentFloor(); currentFloor < this.floors; currentFloor++) {
 						changeDirection();
 						if (getDirection() != "up") {
 							break;
 						}
 
-						Thread.sleep(500);
+						Thread.sleep(250);
 						move(currentFloor);
 						checkForRequest();
 					}
 				} else if (getDirection() == "down") {
-					Thread.sleep(500);
-					System.out.println("Elevator is going down.");
 					for (int currentFloor = getCurrentFloor(); currentFloor >= 0; currentFloor--) {
 						changeDirection();
 						if (getDirection() != "down") {
 							break;
 						}
 
-						Thread.sleep(500);
+						Thread.sleep(250);
 						move(currentFloor);
 						checkForRequest();
 					}
 				}
 			}
+			System.out.println("The elevator has made " + this.trips + " trips.");
 		} catch (
 
 		Exception e) {
@@ -74,6 +74,12 @@ public class Elevator extends Building implements Runnable {
 			setDirection("down");
 		} else if (getDirection() == "down" && !thereArePendingRequests("down")) {
 			setDirection("stop");
+		} else if (getDirection() == "stop") {
+			if (thereArePendingRequests("up")) {
+				setDirection("up");
+			} else if (thereArePendingRequests("down")) {
+				setDirection("down");
+			}
 		}
 	}
 
@@ -83,52 +89,39 @@ public class Elevator extends Building implements Runnable {
 	}
 
 	public void checkForRequest() {
-		// int[] floors = new int[15];
-		// for (int currentRequest = 0; currentRequest < req.requests.size();
-		// currentRequest++) {
-		// Request currentReq = (Request) req.requests.get(currentRequest);
-		// if(currentReq)
-		// }
-
 		for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 			Request currentReq = (Request) req.requests.get(currentRequest);
-			// System.out.println(getCurrentFloor() + "-" + currentReq.destinationFloor +
-			// "-" + currentReq.state);
-			// {[1,3],[7,10].[10,12]}
-			// piso = 10
-			// contador piso1 +1+1
-			// contador piso10
+			// Deja a los pasajeros
 			if (isDestinationFloor(currentReq)) {
 				setPassengers(-currentReq.people);
 				System.out.println(currentReq.people + " passengers left the elevator. Passengers: "
 						+ getPassengers() + " Direction: " + getDirection());
 				currentReq.state = "done";
+				this.trips++;
 			}
 		}
 
 		for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 			Request currentReq = (Request) req.requests.get(currentRequest);
-
+			// Carga a los pasajeros
 			if (isOriginFloor(currentReq)) {
-				// if (shouldChangeDirection()) {
-				// setDirection(currentReq.direction);
-				// }
 
-				// downnnn
-				// 14
-				// 13
-				// 12
-				// 11
-				// 10: 10 - 12 direccion up
+				if (!thereIsSpaceAvailable(currentReq)) {
+					System.out.println(currentReq.people + " tried to enter the elevator but there was no space available.");
+					break;
+				}
 
-				// 10 origen <= 14 y está pendiente
-				if (thereIsSpaceAvailable(currentReq) && (getDirection() == currentReq.direction || getPassengers() == 0)) {
+				if (thereIsSpaceAvailable(currentReq)
+						&& (getDirection() == currentReq.direction || req.getPendingRequests() == 1)) {
+					if (req.getPendingRequests() == 1) {
+						setDirection(currentReq.direction);
+					}
 					setPassengers(currentReq.people);
-					setDirection(currentReq.direction);
 					System.out.println(currentReq.people + " passengers entered the elevator. Passengers: "
 							+ this.passengers + " Direction: " + this.direction);
 					currentReq.state = "in progress";
 				}
+
 			}
 
 		}
@@ -159,8 +152,6 @@ public class Elevator extends Building implements Runnable {
 		} else if (direction.equals("down")) {
 			for (int currentRequest = 0; currentRequest < req.requests.size(); currentRequest++) {
 				Request currentReq = (Request) req.requests.get(currentRequest);
-				// System.out.print("abajo?" + currentReq.originFloor + "-" + getCurrentFloor()
-				// + " / ");
 				if ((currentReq.originFloor <= getCurrentFloor() && currentReq.isPending())
 						|| currentReq.destinationFloor <= getCurrentFloor() && currentReq.isInProgress()) {
 					return true;
@@ -169,16 +160,6 @@ public class Elevator extends Building implements Runnable {
 		}
 		return false;
 	}
-
-	// for (int currentRequest = 0; currentRequest < req.requests.size();
-	// currentRequest++) {
-	// Request currentReq = (Request) req.requests.get(currentRequest);
-	// if ((currentReq.isPending() || currentReq.isInProgress()) &&
-	// currentReq.originFloor >= getCurrentFloor()) {
-	// return true;
-	// }
-	// }
-	// return false;
 
 	public boolean isOriginFloor(Request req) {
 		if (getCurrentFloor() == req.originFloor && req.isPending()) {
@@ -195,7 +176,7 @@ public class Elevator extends Building implements Runnable {
 	}
 
 	public boolean thereIsSpaceAvailable(Request req) {
-		if (this.passengers + req.people <= this.capacity) {
+		if (getPassengers() + req.people <= this.capacity) {
 			return true;
 		}
 		return false;
