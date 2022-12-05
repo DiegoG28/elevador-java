@@ -24,7 +24,6 @@ public class Elevator extends Building implements Runnable {
 			while (trips < 3) {
 				if (getDirection() == "stop") {
 					Thread.sleep(500);
-					System.out.println("There are not pending requests. Elevator is going to floor 0.");
 					for (int currentFloor = getCurrentFloor(); currentFloor >= 0; currentFloor--) {
 						changeDirection();
 						if (getDirection() != "stop") {
@@ -123,8 +122,9 @@ public class Elevator extends Building implements Runnable {
 				// 10: 10 - 12 direccion up
 
 				// 10 origen <= 14 y está pendiente
-				if (thereIsSpaceAvailable(currentReq) && getDirection() == currentReq.direction) {
+				if (thereIsSpaceAvailable(currentReq) && (getDirection() == currentReq.direction || getPassengers() == 0)) {
 					setPassengers(currentReq.people);
+					setDirection(currentReq.direction);
 					System.out.println(currentReq.people + " passengers entered the elevator. Passengers: "
 							+ this.passengers + " Direction: " + this.direction);
 					currentReq.state = "in progress";
